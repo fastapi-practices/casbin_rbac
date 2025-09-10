@@ -19,8 +19,10 @@
 在 core/conf.py 中添加以下内容:
 
 ```python
-# Plugin Casbin RBAC
-# RBAC
+##################################################
+# [ Plugin ] Casdoor
+##################################################
+# 基础配置
 RBAC_CASBIN_EXCLUDE: set[tuple[str, str]] = {
   ('POST', f'{settings.FASTAPI_API_V1_PATH}/auth/logout'),
   ('POST', f'{settings.FASTAPI_API_V1_PATH}/auth/token/new'),
