@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from uuid import UUID
 
 from sqlalchemy import Select
@@ -42,10 +40,7 @@ class CasbinService:
         :return:
         """
         enforcer = await casbin_enforcer()
-        if role is not None:
-            data = enforcer.get_filtered_named_policy('p', 0, str(role))
-        else:
-            data = enforcer.get_policy()
+        data = enforcer.get_filtered_named_policy('p', 0, str(role)) if role is not None else enforcer.get_policy()
         return data
 
     @staticmethod
@@ -87,8 +82,8 @@ class CasbinService:
         old_obj = obj.old
         new_obj = obj.new
         enforcer = await casbin_enforcer()
-        _p = enforcer.has_policy(old_obj.sub, old_obj.path, old_obj.method)
-        if not _p:
+        p = enforcer.has_policy(old_obj.sub, old_obj.path, old_obj.method)
+        if not p:
             raise errors.NotFoundError(msg='权限不存在')
         data = await enforcer.update_policy(
             [old_obj.sub, old_obj.path, old_obj.method],
@@ -120,8 +115,8 @@ class CasbinService:
         :return:
         """
         enforcer = await casbin_enforcer()
-        _p = enforcer.has_policy(p.sub, p.path, p.method)
-        if not _p:
+        p_ = enforcer.has_policy(p.sub, p.path, p.method)
+        if not p_:
             raise errors.NotFoundError(msg='权限不存在')
         data = await enforcer.remove_policy(p.sub, p.path, p.method)
         return data
@@ -196,8 +191,8 @@ class CasbinService:
         :return:
         """
         enforcer = await casbin_enforcer()
-        _g = enforcer.has_grouping_policy(g.uuid, g.role)
-        if not _g:
+        g_ = enforcer.has_grouping_policy(g.uuid, g.role)
+        if not g_:
             raise errors.NotFoundError(msg='权限不存在')
         data = await enforcer.remove_grouping_policy(g.uuid, g.role)
         return data

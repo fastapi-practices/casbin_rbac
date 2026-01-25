@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 import casbin
 import casbin_async_sqlalchemy_adapter
 
@@ -14,7 +12,7 @@ from backend.plugin.casbin_rbac.model import CasbinRule
 async def casbin_enforcer() -> casbin.AsyncEnforcer:
     """获取 casbin 执行器"""
     # 模型定义：https://casbin.org/zh/docs/category/model
-    _CASBIN_RBAC_MODEL_CONF_TEXT = """
+    casbin_rbac_model_conf = """
     [request_definition]
     r = sub, obj, act
 
@@ -31,7 +29,7 @@ async def casbin_enforcer() -> casbin.AsyncEnforcer:
     m = g(r.sub, p.sub) && (keyMatch(r.obj, p.obj) || keyMatch3(r.obj, p.obj)) && (r.act == p.act || p.act == "*")
     """
     adapter = casbin_async_sqlalchemy_adapter.Adapter(async_engine, db_class=CasbinRule)
-    model = casbin.AsyncEnforcer.new_model(text=_CASBIN_RBAC_MODEL_CONF_TEXT)
+    model = casbin.AsyncEnforcer.new_model(text=casbin_rbac_model_conf)
     enforcer = casbin.AsyncEnforcer(model, adapter)
     await enforcer.load_policy()
     return enforcer

@@ -3,6 +3,8 @@ summary = 'Casbin RBAC'
 version = '0.0.1'
 description = '基于 Casbin 实现的 RBAC 访问控制'
 author = 'wu-clan'
+tags = ['auth', 'rbac']
+database = ['mysql', 'pgsql']
 
 [app]
 extend = 'admin'
@@ -14,3 +16,8 @@ tags = '系统API'
 [api.casbin]
 prefix = '/casbin'
 tags = '系统Casbin权限'
+
+[settings]
+RBAC_CASBIN_EXCLUDE = [
+    ['POST', '/api/v1/auth/logout'],
+]

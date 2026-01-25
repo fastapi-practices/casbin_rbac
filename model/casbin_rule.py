@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 from sqlalchemy import String
 from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.dialects.postgresql import TEXT
@@ -31,4 +29,4 @@ class CasbinRule(MappedBase):
         return ', '.join(arr)
 
     def __repr__(self) -> str:
-        return f'<CasbinRule {self.id}: "{str(self)}">'
+        return f'<CasbinRule {self.id}: "{self!s}">'
