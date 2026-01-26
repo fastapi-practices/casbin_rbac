@@ -3,8 +3,8 @@ summary = 'Casbin RBAC'
 version = '0.0.1'
 description = '基于 Casbin 实现的 RBAC 访问控制'
 author = 'wu-clan'
-tags = ['auth', 'rbac']
-database = ['mysql', 'pgsql']
+tags = ['auth']
+database = ['mysql', 'postgresql']
 
 [app]
 extend = 'admin'
