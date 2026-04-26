@@ -1,2 +1,2 @@
-casbin>=1.38.0
-casbin_async_sqlalchemy_adapter>=1.7.0
+pycasbin>=2.8.0
+casbin_async_sqlalchemy_adapter>=1.17.0
