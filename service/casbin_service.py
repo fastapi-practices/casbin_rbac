@@ -1,9 +1,9 @@
 from uuid import UUID
 
 from sqlalchemy import Select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.common.exception import errors
-from backend.database.db import async_db_session
 from backend.plugin.casbin_rbac.crud.crud_casbin import casbin_dao
 from backend.plugin.casbin_rbac.rbac import casbin_enforcer
 from backend.plugin.casbin_rbac.schema.casbin_rule import (
@@ -136,15 +136,15 @@ class CasbinService:
         return data
 
     @staticmethod
-    async def delete_all_policies(*, sub: DeleteAllPoliciesParam) -> int:
+    async def delete_all_policies(*, db: AsyncSession, sub: DeleteAllPoliciesParam) -> int:
         """
         删除所有 P 策略
 
+        :param db: 数据库会话
         :param sub: 删除参数
         :return:
         """
-        async with async_db_session.begin() as db:
-            count = await casbin_dao.delete_policies_by_sub(db, sub)
+        count = await casbin_dao.delete_policies_by_sub(db, sub)
         return count
 
     @staticmethod
@@ -212,15 +212,15 @@ class CasbinService:
         return data
 
     @staticmethod
-    async def delete_all_groups(*, uuid: UUID) -> int:
+    async def delete_all_groups(*, db: AsyncSession, uuid: UUID) -> int:
         """
         删除所有 G 策略
 
+        :param db: 数据库会话
         :param uuid: 用户uuid
         :return: 删除数量
         """
-        async with async_db_session.begin() as db:
-            count = await casbin_dao.delete_groups_by_uuid(db, uuid)
+        count = await casbin_dao.delete_groups_by_uuid(db, uuid)
         return count
 
 

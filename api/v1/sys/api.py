@@ -7,7 +7,7 @@ from backend.common.response.response_schema import ResponseModel, ResponseSchem
 from backend.common.security.jwt import DependsJwtAuth
 from backend.common.security.permission import RequestPermission
 from backend.common.security.rbac import DependsRBAC
-from backend.database.db import CurrentSession
+from backend.database.db import CurrentSession, CurrentSessionTransaction
 from backend.plugin.casbin_rbac.schema.api import CreateApiParam, GetApiDetail, UpdateApiParam
 from backend.plugin.casbin_rbac.service.api_service import api_service
 
@@ -15,14 +15,16 @@ router = APIRouter()
 
 
 @router.get('/all', summary='获取所有接口', dependencies=[DependsJwtAuth])
-async def get_all_apis() -> ResponseSchemaModel[list[GetApiDetail]]:
-    data = await api_service.get_all()
+async def get_all_apis(db: CurrentSession) -> ResponseSchemaModel[list[GetApiDetail]]:
+    data = await api_service.get_all(db=db)
     return response_base.success(data=data)
 
 
 @router.get('/{pk}', summary='获取接口详情', dependencies=[DependsJwtAuth])
-async def get_api(pk: Annotated[int, Path(description='API ID')]) -> ResponseSchemaModel[GetApiDetail]:
-    api = await api_service.get(pk=pk)
+async def get_api(
+    db: CurrentSession, pk: Annotated[int, Path(description='API ID')]
+) -> ResponseSchemaModel[GetApiDetail]:
+    api = await api_service.get(db=db, pk=pk)
     return response_base.success(data=api)
 
 
@@ -35,8 +37,8 @@ async def get_api(pk: Annotated[int, Path(description='API ID')]) -> ResponseSch
     ],
 )
 async def get_pagination_apis(
-    request: Request,
     db: CurrentSession,
+    request: Request,
     name: Annotated[str | None, Query(description='API 名称')] = None,
     method: Annotated[str | None, Query(description='请求方法')] = None,
     path: Annotated[str | None, Query(description='API 路径')] = None,
@@ -54,8 +56,8 @@ async def get_pagination_apis(
         DependsRBAC,
     ],
 )
-async def create_api(obj: CreateApiParam) -> ResponseModel:
-    await api_service.create(obj=obj)
+async def create_api(db: CurrentSessionTransaction, obj: CreateApiParam) -> ResponseModel:
+    await api_service.create(db=db, obj=obj)
     return response_base.success()
 
 
@@ -67,8 +69,10 @@ async def create_api(obj: CreateApiParam) -> ResponseModel:
         DependsRBAC,
     ],
 )
-async def update_api(pk: Annotated[int, Path(description='API ID')], obj: UpdateApiParam) -> ResponseModel:
-    count = await api_service.update(pk=pk, obj=obj)
+async def update_api(
+    db: CurrentSessionTransaction, pk: Annotated[int, Path(description='API ID')], obj: UpdateApiParam
+) -> ResponseModel:
+    count = await api_service.update(db=db, pk=pk, obj=obj)
     if count > 0:
         return response_base.success()
     return response_base.fail()
@@ -82,8 +86,10 @@ async def update_api(pk: Annotated[int, Path(description='API ID')], obj: Update
         DependsRBAC,
     ],
 )
-async def delete_api(pk: Annotated[list[int], Query(description='API ID 列表')]) -> ResponseModel:
-    count = await api_service.delete(pk=pk)
+async def delete_api(
+    db: CurrentSessionTransaction, pk: Annotated[list[int], Query(description='API ID 列表')]
+) -> ResponseModel:
+    count = await api_service.delete(db=db, pk=pk)
     if count > 0:
         return response_base.success()
     return response_base.fail()

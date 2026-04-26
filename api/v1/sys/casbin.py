@@ -8,7 +8,7 @@ from backend.common.response.response_schema import ResponseModel, ResponseSchem
 from backend.common.security.jwt import DependsJwtAuth
 from backend.common.security.permission import RequestPermission
 from backend.common.security.rbac import DependsRBAC
-from backend.database.db import CurrentSession
+from backend.database.db import CurrentSession, CurrentSessionTransaction
 from backend.plugin.casbin_rbac.schema.casbin_rule import (
     CreateGroupParam,
     CreatePolicyParam,
@@ -136,8 +136,8 @@ async def delete_policies(ps: list[DeletePolicyParam]) -> ResponseSchemaModel[bo
         DependsRBAC,
     ],
 )
-async def delete_all_policies(sub: DeleteAllPoliciesParam) -> ResponseModel:
-    count = await casbin_service.delete_all_policies(sub=sub)
+async def delete_all_policies(db: CurrentSessionTransaction, sub: DeleteAllPoliciesParam) -> ResponseModel:
+    count = await casbin_service.delete_all_policies(db=db, sub=sub)
     if count > 0:
         return response_base.success()
     return response_base.fail()
@@ -209,8 +209,8 @@ async def delete_groups(gs: list[DeleteGroupParam]) -> ResponseSchemaModel[bool]
         DependsRBAC,
     ],
 )
-async def delete_all_groups(uuid: Annotated[UUID, Query()]) -> ResponseModel:
-    count = await casbin_service.delete_all_groups(uuid=uuid)
+async def delete_all_groups(db: CurrentSessionTransaction, uuid: Annotated[UUID, Query()]) -> ResponseModel:
+    count = await casbin_service.delete_all_groups(db=db, uuid=uuid)
     if count > 0:
         return response_base.success()
     return response_base.fail()
