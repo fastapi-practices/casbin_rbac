@@ -89,8 +89,7 @@ m = g(r.sub, p.sub) && (keyMatch(r.obj, p.obj) || keyMatch3(r.obj, p.obj)) && (r
     summary='示例接口',
     dependencies=[DependsRBAC],
 )
-async def hello():
-    ...
+async def hello(): ...
 ```
 
 ## 卸载说明

@@ -7,6 +7,7 @@ from sqlalchemy_crud_plus import CRUDPlus
 
 from backend.plugin.casbin_rbac.model import Api
 from backend.plugin.casbin_rbac.schema.api import CreateApiParam, UpdateApiParam
+from backend.utils.timezone import timezone
 
 
 class CRUDApi(CRUDPlus[Api]):
@@ -20,7 +21,7 @@ class CRUDApi(CRUDPlus[Api]):
         :param pk: API ID
         :return:
         """
-        return await self.select_model(db, pk)
+        return await self.select_model(db, pk, deleted=0)
 
     async def get_list(
         self, request: Request, name: str | None = None, method: str | None = None, path: str | None = None
@@ -34,14 +35,16 @@ class CRUDApi(CRUDPlus[Api]):
         :param path: API 路径
         :return:
         """
-        filters = {}
+        filters = {'deleted': 0}
+
         if name is not None:
             filters.update(name__like=f'%{name}%')
         if method is not None:
             filters.update(method=method)
         if path is not None:
             filters.update(path__like=f'%{path}%')
-        stmt = await self.select_order('created_time', 'desc', **filters)
+
+        stmt = await self.select_order('id', 'desc', **filters)
         return stmt
 
     async def get_all(self, db: AsyncSession) -> Sequence[Api]:
@@ -51,7 +54,7 @@ class CRUDApi(CRUDPlus[Api]):
         :param db: 数据库会话
         :return:
         """
-        return await self.select_models(db)
+        return await self.select_models(db, deleted=0)
 
     async def get_by_name(self, db: AsyncSession, name: str) -> Api | None:
         """
@@ -61,7 +64,7 @@ class CRUDApi(CRUDPlus[Api]):
         :param name: API 名称
         :return:
         """
-        return await self.select_model_by_column(db, name=name)
+        return await self.select_model_by_column(db, name=name, deleted=0)
 
     async def create(self, db: AsyncSession, obj: CreateApiParam) -> None:
         """
@@ -82,7 +85,7 @@ class CRUDApi(CRUDPlus[Api]):
         :param obj: 更新 API 参数
         :return:
         """
-        return await self.update_model(db, pk, obj)
+        return await self.update_model_by_column(db, obj, id=pk, deleted=0)
 
     async def delete(self, db: AsyncSession, pk: list[int]) -> int:
         """
@@ -92,7 +95,17 @@ class CRUDApi(CRUDPlus[Api]):
         :param pk: API ID 列表
         :return:
         """
-        return await self.delete_model_by_column(db, allow_multiple=True, id__in=pk)
+        return await self.delete_model_by_column(
+            db,
+            allow_multiple=True,
+            logical_deletion=True,
+            deleted_flag_column='deleted',
+            deleted_flag_value=self.model.id,
+            deleted_at_column='deleted_time',
+            deleted_at_factory=timezone.now(),
+            id__in=pk,
+            deleted=0,
+        )
 
 
 api_dao: CRUDApi = CRUDApi(Api)
