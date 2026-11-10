@@ -14,6 +14,8 @@
     - [半小时彻底弄懂 Casbin 基础模型](https://www.bilibili.com/video/BV1qz4y167XP)
     - [Casbin 代码使用与 API 调用](https://www.bilibili.com/video/BV13r4y1M7AC)
 
+> [!WARNING]
+> 自 0.0.4 版本起不再支持 MySQL 数据库，仅支持 PostgreSQL
 
 ## 插件类型
 
