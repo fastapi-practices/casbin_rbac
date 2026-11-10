@@ -14,6 +14,7 @@
     - [半小时彻底弄懂 Casbin 基础模型](https://www.bilibili.com/video/BV1qz4y167XP)
     - [Casbin 代码使用与 API 调用](https://www.bilibili.com/video/BV13r4y1M7AC)
 
+
 ## 插件类型
 
 - 扩展级插件
@@ -21,11 +22,13 @@
 
 ## 配置说明
 
-在 `backend/core/conf.py` 中更新以下内容：
+插件目录下 `plugin.toml` 的 `[settings]` 中包含以下内容：
 
-```python
-# RBAC
-RBAC_ROLE_MENU_MODE: bool = False
+```toml
+[settings]
+RBAC_CASBIN_EXCLUDE = [
+    'POST /api/v1/auth/logout',
+]
 ```
 
 在 `backend/core/conf.py` 中添加以下内容：
@@ -35,62 +38,19 @@ RBAC_ROLE_MENU_MODE: bool = False
 # [ Plugin ] casbin_rbac
 ##################################################
 # 基础配置（in plugin.toml）
-RBAC_CASBIN_EXCLUDE: set[tuple[str, str]]
+RBAC_ROLE_MENU_MODE: bool = False
 ```
 
-插件目录下 `plugin.toml` 的 `[settings]` 中包含以下内容：
+## 配置项说明
 
-```toml
-[settings]
-RBAC_CASBIN_EXCLUDE = [
-    ['POST', '/api/v1/auth/logout'],
-]
-```
+- `RBAC_CASBIN_EXCLUDE`：控制跳过 Casbin 策略校验的接口白名单
 
 ## 使用方式
 
 1. 安装并启用插件后，重启后端服务
 2. 在后台维护 API 资源、Casbin 策略和用户角色关系
-3. 在需要鉴权的路由中添加 `DependsRBAC` 依赖
-4. 使用在线编辑器验证规则后，再将策略写入系统
-
-内置模型：
-
-```text
-[request_definition]
-r = sub, obj, act
-
-[policy_definition]
-p = sub, obj, act
-
-[role_definition]
-g = _, _
-
-[policy_effect]
-e = some(where (p.eft == allow))
-
-[matchers]
-m = g(r.sub, p.sub) && (keyMatch(r.obj, p.obj) || keyMatch3(r.obj, p.obj)) && (r.act == p.act || p.act == "*")
-```
-
-策略类型：
-
-| 类型             | 适用场景   | 格式                                  | 依赖关系     |
-|----------------|--------|-------------------------------------|----------|
-| **P 策略**（角色基准） | 批量用户配置 | `角色 role + 访问路径 path + 访问方法 method` | 需配合 G 策略 |
-| **P 策略**（用户基准） | 指定用户配置 | `用户 uuid + 访问路径 path + 访问方法 method` | 独立生效     |
-| **G 策略**       | 角色分配   | `用户 uuid + 角色 role`                 | 需 P 策略配合 |
-
-路由集成示例：
-
-```python
-@router.post(
-    '/hello',
-    summary='示例接口',
-    dependencies=[DependsRBAC],
-)
-async def hello(): ...
-```
+3. 在需要鉴权的接口上启用策略校验依赖
+4. 使用 Casbin 在线编辑器验证规则后，再将策略写入系统
 
 ## 卸载说明
 

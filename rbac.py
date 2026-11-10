@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import casbin
 import casbin_async_sqlalchemy_adapter
 
@@ -35,6 +37,23 @@ async def casbin_enforcer() -> casbin.AsyncEnforcer:
     return enforcer
 
 
+@lru_cache(maxsize=1)
+def get_casbin_exclude() -> frozenset[tuple[str, str]]:
+    """
+    获取 Casbin 鉴权白名单
+
+    配置项格式为 `METHOD PATH`，例如 `POST /api/v1/auth/logout`
+
+    :return:
+    """
+    excludes = set()
+    for item in settings.RBAC_CASBIN_EXCLUDE:
+        method, _, path = item.strip().partition(' ')
+        if method and path:
+            excludes.add((method.upper(), path.strip()))
+    return frozenset(excludes)
+
+
 async def casbin_verify(request: Request) -> None:
     """
     Casbin 权限校验
@@ -46,7 +65,7 @@ async def casbin_verify(request: Request) -> None:
     path = request.url.path
 
     # casbin 鉴权白名单
-    if (method, path) in settings.RBAC_CASBIN_EXCLUDE:
+    if (method, path) in get_casbin_exclude():
         return
 
     # casbin 权限校验
